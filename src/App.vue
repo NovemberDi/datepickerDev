@@ -113,7 +113,7 @@ import axios from 'axios';
             this.days.forEach(item =>{item==event&&item.value<10?item.value+=1:''})
           },
           setPosition(event){
-            (document.documentElement.clientHeight - event.top) > 330? this.calPosition.top = event.top-30:this.calPosition.top = event.top-370;
+            (window.innerHeight + window.scrollY - event.top) > 330? this.calPosition.top = event.top-30:this.calPosition.top = event.top-370;
             (document.documentElement.clientWidth) > 550? this.calPosition.left = event.left:this.calPosition.left = (document.documentElement.clientWidth - 256)/2;
             // this.calPosition.left = event.left;
             this.calPosition.display='';
