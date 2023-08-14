@@ -102,11 +102,7 @@
                 curentPoint.setMonth(curentPoint.getMonth()-1, 1);
                 this.listOfMonth.push(this.createMonthList(curentPoint));
                 curentPoint.setMonth(curentPoint.getMonth()+1, 1);
-                this.listOfMonth.push(this.createMonthList(curentPoint));
-
-                // curentPoint.setMonth(curentPoint.getMonth()+1, 1);
-                // this.listOfMonth.push(this.createMonthList(curentPoint));
-                
+                this.listOfMonth.push(this.createMonthList(curentPoint));        
             },
 
             createMonthList(current){  

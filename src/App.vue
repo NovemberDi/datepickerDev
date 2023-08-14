@@ -11,11 +11,13 @@
       :periods="periods"
       :style="`top:${calPosition.top+'px'}; left: ${calPosition.left+'px'}; display: ${calPosition.display}`" class="datepicker"></Calendar>
     <div  class="main-block">
-    <div  class="main">
-      <div class="periods">
+    <div  class="main" >
+      <div class="periods left-block" >
           <div  class="title"><h2> Учебные периоды</h2></div>
-          <button-add @click="addPeriod" :yellow="true">Добавить</button-add>
-          <transition-group name="list-complete" tag="p">
+          <div class="step_two">
+            <button-add @click="addPeriod" :yellow="true">Добавить</button-add>
+          </div>
+          <transition-group name="list-complete" tag="span">
             <date-input 
             class="item-period list-complete-item" 
             v-for="period in periods"
@@ -33,19 +35,22 @@
         </transition-group>
       </div>
 
-      <div class="periods">
+      <div class="periods right-block">
           <div class="title"><h2> Часов за день </h2></div>
-          <p>Укажите сколько часов в день</p>
+          <div class="step_two">
+            <p>Укажите сколько часов в день</p>
+          </div>
           <day-hours v-for="day in days"
           :day="day"
           @dayUp="dayUp"
           @dayDown="dayDown"  
           ></day-hours>
       </div>
-    </div>
-    <div @click="unFocus"  class="btn-wrap">
+      <div @click="unFocus"  class="btn-wrap">
       <button-add  @click="getResult"   :green="true">Расчитать</button-add>
-  </div>
+      </div>
+    </div>
+    
   </div>
     
   </div>
@@ -108,8 +113,9 @@ import axios from 'axios';
             this.days.forEach(item =>{item==event&&item.value<10?item.value+=1:''})
           },
           setPosition(event){
-            (window.innerHeight - event.top) > 330? this.calPosition.top = event.top-30:this.calPosition.top = event.top-370;
-            this.calPosition.left = event.left;
+            (document.documentElement.clientHeight - event.top) > 330? this.calPosition.top = event.top-30:this.calPosition.top = event.top-370;
+            (document.documentElement.clientWidth) > 550? this.calPosition.left = event.left:this.calPosition.left = (document.documentElement.clientWidth - 256)/2;
+            // this.calPosition.left = event.left;
             this.calPosition.display='';
 
             this.currentInput.elem = event.elem;
@@ -157,18 +163,27 @@ import axios from 'axios';
                   let year = item.getFullYear();
                   let month = (item.getMonth()+2)/10>1?item.getMonth()+1:'0'+(item.getMonth()+1);
                   let date = (item.getDate()+1)/10>1?item.getDate():'0'+item.getDate();
-                    //Сделать обравотку ошибок!!!----------------------------------------------------
-                      let response = await axios.get('https://isdayoff.ru/'+year+'-'+month+'-'+date);
-                      this.days.forEach(day => {
-                        if (day.value>0&&day.num==item.getDay()&&response.data==0)
-                        {
-                          for (let i = 0; i < day.value; i++)
+                    //обравотка ошибок----------------------------------------------------
+                    let response = null;
+                      try{
+                      response = await axios.get('https://isdayoff.ru/'+year+'-'+month+'-'+date);
+                    } 
+                      catch {
+                        alert('Сервер не отвечает, попробуйте позже..');
+                        break
+                    
+                      }
+                      if (response) {
+                        this.days.forEach(day => {
+                          if (day.value>0&&day.num==item.getDay()&&response.data==0)
                           {
-                            result.push(year+'-'+month+'-'+date)
+                            for (let i = 0; i < day.value; i++)
+                            {
+                              result.push(year+'-'+month+'-'+date)
+                            }
                           }
-                        }
-                      })
-
+                        })
+                      }
               };
               if (result.length>0){
                 for (let i = 0; i < result.length; i++){
@@ -177,10 +192,7 @@ import axios from 'axios';
               }else{
                 this.result.push({date:'Список пуст',num:1})
               }
-              
-              // console.log(this.result);
               })();
-            
           }
             
           
@@ -191,30 +203,31 @@ import axios from 'axios';
 
 
 
-<style>
+<style >
+  html body{
+      margin: 0;
+      padding: 0;   
+      background-color: #2f2e2e;
+    }
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
+ 
   min-height: 100vh;
-  /* background-image: url('@/assets/wall.jpg'); */
+  margin: 0;
+  padding: 0;
+
   background: linear-gradient(45deg, #13547a, #80d0c7);
-  /* background: linear-gradient(45deg, #84cbf4, #b4f8f0); */
 }
 h1 h2 h3{
   font-size: 16px;
 }
 .datepicker{
-  position:absolute;
-  /* scale: 0.8; */
-  /* top: 60px;
-  left: 30px; */
-  /* display: none; */
-  
+  position:absolute;  
 }
 .header__wrap{
-  /* background: rgb(236, 252, 253); */
   background: rgb(227, 239, 240);
   box-shadow: 0px 0px 8px 5px rgba(39, 44, 47, 0.2);
   height: 64px;
@@ -223,54 +236,70 @@ h1 h2 h3{
   justify-content: center;
 }
 .header{
-width: 1100px;
+display: flex;
+width: 100%;
 }
 .logo{
+  align-items: center;
+  justify-content: flex-start;
+  margin-left: 5%;
   font-size: 28px;
 }
 .main__wrap{
-  display: flex;
-  justify-content: center;
   position: relative;
 }
 .main-block{
-  width: 950px;
-  background: rgba(227, 239, 240, 0.4);
-  box-shadow: 0px 0px 8px 5px rgba(39, 44, 47, 0.2);
-  min-height: 540px;
-  margin-top: 60px;
-  margin-bottom: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .main{
-  min-height: 470px;
-  
-  display: flex;
-  /* flex-direction: column; */
+  margin-top: 100px;
+  margin-bottom: 100px;
+  width: 780px;
+  background: rgba(227, 239, 240, 0.4);
+  display: grid;
+  grid-template: 1fr 60px/ 1fr 1fr ; 
+
+  box-shadow: 0px 0px 8px 5px rgba(39, 44, 47, 0.2);
+
 }
 .btn-wrap{
   display: flex;
   justify-content: center;
-  align-items: center;
-  margin-bottom: 70px;
+  grid-area: 2/ 1 / 3 / 3;
+  align-self: center;
+  justify-self: center;
 }
 
 .periods{
-  /* border: 1px #fff solid; */
-  width: 50%;
+  width: 100%;
+  /* min-height: 484px; */
+  justify-self: center;
   display: flex;
   flex-direction: column;
-  flex-wrap: wrap;
   align-items: center;
 }
+.left-block{
+  grid-area: 1 / 1 / 1 / 1;
+}
+.right-block{
+  grid-area: 1 / 2 / 1 / 2;
+}
 .periods>p{
-  /* color: rgb(255, 255, 255); */
   margin-top: 6px;
   margin-bottom: 4px;
 }
-
+.step_two{
+  height: 32px;;
+  display: flex;
+  align-items: center;
+  
+}
 .title{
   margin: 14px;
   font-size: 20px;
+  line-height: 20px;
 }
 .item-period{
   
@@ -290,6 +319,24 @@ width: 1100px;
 
 .list-complete-leave-active {
   position: absolute;
+}
+@media screen and (max-width: 610px) {
+  .main{  
+  grid-template: auto 1fr 60px/ 1fr ; 
+  margin: 50px 0 50px 0 ;
+  width: 90%;
+}
+.btn-wrap{
+  grid-area: 3/ 1 / 3 / 1;
+}
+
+.left-block{
+  grid-area: 1 / 1 / 1 / 1;
+  height: auto;
+}
+.right-block{
+  grid-area: 2 / 1 / 2 / 2;
+}
 }
 
 </style>
