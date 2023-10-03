@@ -4,27 +4,29 @@
         <div class="modal" @mousedown.stop>
             <div class="modal-title"><h3>Результат</h3></div>
             <div v-if="result.length>0" class="modal-item" >
-                <div>
-                    <div class="part"   v-for="item in result" >
-                        <p onselectstart="return false">{{  item.num  }})</p>
-                    </div>
-                </div>
-                <div>
-                    <div  class="part" v-for="item in result" >
-                    <p>{{  item.date  }}</p>
-                    </div>
-                </div>
-                <div>
-                    <div  class="part" v-for="item in result" >
-                    <button @click="copy(item)" class="copy">&#10064;</button>
-                    </div>
-                </div>  
+                
+                        <td   >
+                            <tr class="items" v-for="item in result" onselectstart="return false">
+                            {{  item.num  }})
+                            </tr>
+                        </td>      
+                
+                        <td  >
+                            <tr class="items" v-for="item in result" >
+                                {{  item.date  }}
+                            </tr>
+                        </td> 
+                
+                        <td  >
+                            <tr class="items" v-for="item in result" onselectstart="return false">
+                                <button @click="copy(item)" class="copy">&#10064;</button>
+                            </tr>
+                        </td>    
+                  
             </div>
              <my-preloader v-else class="loader"></my-preloader>
         </div>
-            <div class="copired" v-show="show">Скопировано!</div>
-            
-            
+            <div class="copired" v-show="show">Скопировано!</div>        
     </div>
 </template>
 
@@ -61,6 +63,9 @@
 </script>
 
 <style scoped>
+.items{
+    height: 25px;
+}
 .modal-wrap{
     position: fixed;
     

@@ -91,8 +91,7 @@ import axios from 'axios';
             currentInput: {},
             result: [],
             showResult: false,
-            isWrong: false,
-            
+            isWrong: false,  
           }
         },
         methods:{
@@ -115,15 +114,10 @@ import axios from 'axios';
           setPosition(event){
             (window.innerHeight + window.scrollY - event.top) > 330? this.calPosition.top = event.top-30:this.calPosition.top = event.top-370;
             (document.documentElement.clientWidth) > 550? this.calPosition.left = event.left:this.calPosition.left = (document.documentElement.clientWidth - 256)/2;
-            // this.calPosition.left = event.left;
             this.calPosition.display='';
-
             this.currentInput.elem = event.elem;
             this.currentInput.period = event.period;
             this.currentInput.target = event.target;
-
-            // console.log(this.currentInput)
-
           },
           unFocus(){
             this.calPosition.display='none'
@@ -163,7 +157,7 @@ import axios from 'axios';
                   let year = item.getFullYear();
                   let month = (item.getMonth()+2)/10>1?item.getMonth()+1:'0'+(item.getMonth()+1);
                   let date = (item.getDate()+1)/10>1?item.getDate():'0'+item.getDate();
-                    //обравотка ошибок----------------------------------------------------
+                    //обработка ошибок----------------------------------------------------
                     let response = null;
                       try{
                       response = await axios.get('https://isdayoff.ru/'+year+'-'+month+'-'+date);
@@ -179,7 +173,9 @@ import axios from 'axios';
                           {
                             for (let i = 0; i < day.value; i++)
                             {
-                              result.push(year+'-'+month+'-'+date)
+                              // result.push(year+'-'+month+'-'+date)
+                              result.push(date+'.'+month+'.'+year)
+
                             }
                           }
                         })
