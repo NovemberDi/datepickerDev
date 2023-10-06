@@ -47,7 +47,7 @@
           ></day-hours>
       </div>
       <div @click="unFocus"  class="btn-wrap">
-      <button-add  @click="getResult"   :green="true">Расчитать</button-add>
+      <button-add  @click="getResult"   :green="true">Рассчитать</button-add>
       </div>
     </div>
     
