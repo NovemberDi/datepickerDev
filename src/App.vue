@@ -75,6 +75,7 @@ import axios from 'axios';
               {id:3, start:'', end:''},
               {id:4, start:'', end:''},
               {id:5, start:'', end:''},
+              {id:6, start:'', end:''},
             ],
             days:[
               {name:'Понедельник', value:0,num:1},
@@ -82,6 +83,7 @@ import axios from 'axios';
               {name:'Среда',value:0,num:3},
               {name:'Четверг',value:0,num:4},
               {name:'Пятница',value:0,num:5},
+              {name:'Суббота',value:0,num:6},
             ],
             calPosition:{
               top:0,
@@ -136,63 +138,62 @@ import axios from 'axios';
             
             
           },
-           getResult(){
-            if (!this.isWrong && this.days.find(item => item.value>0) && this.periods.find(item => item.start && item.end) ) {
-            this.result = [];
+          async getResult(){
+            if (!(!this.isWrong && this.days.find(item => item.value>0) && this.periods.find(item => item.start && item.end))) return
             this.showResult=true;
-            let allDate = [];
-            let allDays = [];
-            let result = [];
-            this.days.forEach(item =>item.value>0?allDays.push(item.num):'');
-            this.periods.forEach(item => {
-              
-              let start = new Date(item.start);
-              let end = new Date(item.end);
-              while (start<=end) {
-                if (allDays.includes(start.getDay())){allDate.push(new Date(start))};
-                 start.setDate(start.getDate()+1);
-            }});
-             (async () => {
-              for (const item of allDate) {
-                  let year = item.getFullYear();
-                  let month = (item.getMonth()+2)/10>1?item.getMonth()+1:'0'+(item.getMonth()+1);
-                  let date = (item.getDate()+1)/10>1?item.getDate():'0'+item.getDate();
-                    //обработка ошибок----------------------------------------------------
-                    let response = null;
-                      try{
-                      response = await axios.get('https://isdayoff.ru/'+year+'-'+month+'-'+date);
-                    } 
-                      catch {
-                        alert('Сервер не отвечает, попробуйте позже..');
-                        break
-                    
-                      }
-                      if (response) {
-                        this.days.forEach(day => {
-                          if (day.value>0&&day.num==item.getDay()&&response.data==0)
-                          {
-                            for (let i = 0; i < day.value; i++)
-                            {
-                              // result.push(year+'-'+month+'-'+date)
-                              result.push(date+'.'+month+'.'+year)
+            this.result = []; 
+            this.result = await this.makeDatesList; 
+          } 
+    },
+    computed:{
+      async makeDatesList(){
+        let result = [];
 
-                            }
-                          }
-                        })
-                      }
-              };
-              if (result.length>0){
-                for (let i = 0; i < result.length; i++){
-                  this.result.push({date:result[i],num:i+1})
+      let allDate = [];
+      let allDays = this.days.map(item =>item.value>0?item.num:'');
+
+      this.periods.forEach(period => {
+        let start = new Date(period.start);
+        let end = new Date(period.end);
+        while (start<=end) {
+          if (allDays.includes(start.getDay())){
+            allDate.push(new Date(start))
+          };
+          start.setDate(start.getDate()+1);
+      }});
+
+        for (const item of allDate) {
+            let year = item.getFullYear();
+            let month = (item.getMonth()+2)/10>1?item.getMonth()+1:'0'+(item.getMonth()+1);
+            let date = (item.getDate()+1)/10>1?item.getDate():'0'+item.getDate();
+              //обработка ошибок----------------------------------------------------
+              let response = null;
+                try{
+                response = await axios.get('https://isdayoff.ru/'+year+'-'+month+'-'+date+'?sd=1');
+              } 
+                catch {
+                  alert('Сервер не отвечает, попробуйте позже..');
+                  break
                 }
-              }else{
-                this.result.push({date:'Список пуст',num:1})
-              }
-              })();
-          }
-            
-          
-        } 
+                if (response) {
+                  this.days.forEach(day => {
+                    if (day.value > 0 && day.num == item.getDay() && response.data == 0)
+                    {
+                      for (let i = 0; i < day.value; i++)
+                      {
+                        result.push(date+'.'+month+'.'+year)
+                      }
+                    }
+                  })
+                }
+        };
+
+        if (result.length>0){
+          return result.map((item, index) => {return {date:item,num:index+1}} )
+        }else{
+           return [{date:'Список пуст',num:1}]
+        }
+      },
     }
     }
 </script>
@@ -250,8 +251,8 @@ width: 100%;
   justify-content: center;
 }
 .main{
-  margin-top: 100px;
-  margin-bottom: 100px;
+  margin-top: 60px;
+  margin-bottom: 60px;
   width: 780px;
   background: rgba(227, 239, 240, 0.4);
   display: grid;
@@ -297,9 +298,9 @@ width: 100%;
   font-size: 20px;
   line-height: 20px;
 }
-.item-period{
+/* .item-period{
   
-}
+} */
 /* -------Анимация списка-------- */
 .list-complete-item {
   transition: all 0.5s ease;

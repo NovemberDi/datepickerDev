@@ -2,14 +2,17 @@
     <div class="modal-wrap" @mousedown="hideModal">
         
         <div class="modal" @mousedown.stop>
-            <div class="modal-title"><h3>Результат</h3></div>
+            <div class="modal-title">
+                <h3>Результат</h3>
+                <button @click="copyAll" class="copyAll">Скопировать всё &#10064;</button>
+            </div>
             <div v-if="result.length>0" class="modal-item" >
                 <div>
                     <div class="part"   v-for="item in result" >
                         <p onselectstart="return false">{{  item.num  }})</p>
                     </div>
                 </div>
-                <div>
+                <div id="dates">
                     <div  class="part" v-for="item in result" >
                     <p>{{  item.date  }}</p>
                     </div>
@@ -54,6 +57,16 @@
                         console.log('Something went wrong', err);
                     });
                 
+            },
+            copyAll(){
+                this.show=true;
+                setTimeout(()=>this.show=false, 1000); 
+                let range = document.createRange();
+                range.selectNode(document.getElementById('dates'));
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                document.execCommand("copy");
+                window.getSelection().removeAllRanges();
             }
         }
 
@@ -122,7 +135,7 @@
 .copy{
     color:rgb(119, 119, 119);
     font-size: 16px;
-    /* background: rgba(109, 109, 109, 0.7); */
+    background: rgb(239, 238, 238);
     border: none;
     height: 24px;
     width: 24px;
@@ -130,22 +143,44 @@
     align-items: center;
     justify-content: center;
     line-height: 0;
-    border-radius: 50%;
+    border-radius: 10px;
     cursor: pointer;
+}
+.copyAll{
+    color:rgb(119, 119, 119);
+    font-size: 16px;
+    background: rgb(239, 238, 238);
+    border: none;
+    height: 24px;
+    width: fit-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: -8px;
 }
 .modal-title{
 position: sticky;
 top: 0;
+
 width: 100%;
 background: rgb(255, 255, 255);
 margin-top: -3px;
 z-index: 5;
-padding: 16px;
+padding: 10px;
 display: flex;
+flex-direction: column;
 justify-content: center;
+
+align-items: center;
 
 
 /* border-bottom: 1px solid rgb(140, 140, 140); */
+}
+.modal-title > h3{
+    margin-top: 5px;
 }
 
 .loader{
