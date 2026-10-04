@@ -7,6 +7,8 @@ import DateInput from '@/components/UI/DateInput.vue'
 import DayHours from '@/components/UI/DayHours.vue'
 import ModalResult from '@/components/UI/ModalResult.vue'
 import MyPreloader from '@/components/UI/MyPreloader.vue'
+import MyToggle from './MyToggle.vue'
+import CookieBanner from './CookieBanner.vue'
 
 
 export default[
@@ -18,6 +20,8 @@ export default[
     DateInput,
     DayHours,
     ModalResult,
-    MyPreloader
+    MyPreloader,
+    MyToggle,
+    CookieBanner
 ]
 

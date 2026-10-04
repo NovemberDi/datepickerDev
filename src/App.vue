@@ -36,12 +36,18 @@
       </div>
 
       <div class="periods right-block">
-          <div class="title"><h2> Часов за день </h2></div>
+          <div class="title-right"><h2> Часов за день </h2></div>
+          <div class="six-mod-selector step_two">
+            <h3>6-дневная неделя</h3>
+              <!-- <h3>Шестидневная неделя:</h3> -->
+              <my-toggle v-model="sixWeekMode"></my-toggle>
+          </div>
           <div class="step_two">
             <p>Укажите сколько часов в день</p>
           </div>
-          <day-hours v-for="day in days"
+          <day-hours v-for="day in days" :key="day.num"
           :day="day"
+          :sixWeekMode="sixWeekMode"
           @dayUp="dayUp"
           @dayDown="dayDown"  
           ></day-hours>
@@ -54,7 +60,18 @@
   </div>
     
   </div>
+  <CookieBanner></CookieBanner>
   
+<footer class="site-footer">
+  <div class="footer-copyright">
+    © {{ new Date().getFullYear() }} Даты для КТП онлайн
+  </div>
+  <div class="footer-link-wrap">
+    <a href="/privacy.html" target="_blank" class="footer-link">
+      Политика конфиденциальности
+    </a>
+  </div>
+</footer>
 </template>
 
 
@@ -62,7 +79,6 @@
 <script>
 import Calendar from './components/Calendar.vue';
 import axios from 'axios';
-
     export default {
         components:{
           Calendar
@@ -90,10 +106,12 @@ import axios from 'axios';
               left:0,
               display:'none',
             },
+            sixWeekMode: false,
             currentInput: {},
             result: [],
             showResult: false,
-            isWrong: false,  
+            isWrong: false,
+            dataLists: {}
           }
         },
         methods:{
@@ -143,7 +161,29 @@ import axios from 'axios';
             this.showResult=true;
             this.result = []; 
             this.result = await this.makeDatesList; 
-          } 
+          } ,
+          async getDataList() {
+            let response = null;
+            try{
+                response = await axios.get('data/dates.json');
+                // console.log (response.data)
+                function mergeScheduleDays(data) {
+                    const result = {};
+                    for (const [scheduleType, yearsObject] of Object.entries(data)) {
+                      result[scheduleType] = Object.values(yearsObject) 
+                        .map(yearData => yearData.weekDays || []).flat();
+                    }
+                    return result;
+              }
+
+              
+              this.dataLists = mergeScheduleDays(response.data);
+              console.log(this.dataLists);              
+              } 
+                catch {
+                  alert('Сервер не отвечает, попробуйте позже..');
+                }
+          }
     },
     computed:{
       async makeDatesList(){
@@ -167,17 +207,19 @@ import axios from 'axios';
             let month = (item.getMonth()+2)/10>1?item.getMonth()+1:'0'+(item.getMonth()+1);
             let date = (item.getDate()+1)/10>1?item.getDate():'0'+item.getDate();
               //обработка ошибок----------------------------------------------------
-              let response = null;
-                try{
-                response = await axios.get('https://isdayoff.ru/'+year+'-'+month+'-'+date+'?sd=1');
-              } 
-                catch {
-                  alert('Сервер не отвечает, попробуйте позже..');
-                  break
-                }
-                if (response) {
+              //Тут будет новая логика
+            let checkResult
+            let testingData = year+'-'+month+'-'+date;
+
+            if(this.sixWeekMode){
+              checkResult = this.dataLists.sixDaysWeek.includes(testingData)
+            } else {
+              checkResult = this.dataLists.fiveDaysWeek.includes(testingData)
+            }
+            
+           
                   this.days.forEach(day => {
-                    if (day.value > 0 && day.num == item.getDay() && response.data == 0)
+                    if (day.value > 0 && day.num == item.getDay() && !checkResult)
                     {
                       for (let i = 0; i < day.value; i++)
                       {
@@ -185,7 +227,10 @@ import axios from 'axios';
                       }
                     }
                   })
-                }
+                
+                
+                ///старая
+
         };
 
         if (result.length>0){
@@ -194,7 +239,18 @@ import axios from 'axios';
            return [{date:'Список пуст',num:1}]
         }
       },
-    }
+    },
+    mounted() {
+    this.getDataList();
+  },
+    watch: {
+      sixWeekMode(newValue) {
+        console.log('myData изменился на:', newValue);
+        if (!newValue) {
+          this.days[5].value = 0
+        }
+        }
+      }
     }
 </script>
 
@@ -211,15 +267,22 @@ import axios from 'axios';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
- 
   min-height: 100vh;
   margin: 0;
   padding: 0;
-
   background: linear-gradient(45deg, #13547a, #80d0c7);
+  
+  display: flex;
+  flex-direction: column; 
 }
 h1 h2 h3{
   font-size: 16px;
+}
+.six-mod-selector{
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: 268px;
 }
 .datepicker{
   position:absolute;  
@@ -298,6 +361,11 @@ width: 100%;
   font-size: 20px;
   line-height: 20px;
 }
+.title-right{
+  margin: 14px 14px 0px 14px;
+  font-size: 20px;
+  line-height: 20px;
+}
 /* .item-period{
   
 } */
@@ -336,4 +404,21 @@ width: 100%;
 }
 }
 
+.site-footer {
+  text-align: center;
+  margin-top: auto; 
+  padding: 20px;
+  color: #2c3e50;
+  font-size: 12px;
+}
+
+
+.footer-link-wrap {
+  margin-top: 5px;
+}
+
+.footer-link {
+  color: #2c3e50;
+  text-decoration: underline;
+}
 </style>

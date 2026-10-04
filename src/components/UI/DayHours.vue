@@ -1,5 +1,5 @@
 <template>
-    <div class="hours-wrap line">
+    <div class="hours-wrap line" :class="{ 'deactive-mode': day.num == 6 && !sixWeekMode }">
         <div class="day">
             {{ day.name }}
         </div>
@@ -16,8 +16,14 @@
 <script>
     export default {
         name:'day-hours',
+        data(){
+          return{
+            isSixWeek: false,
+          }
+        },
         props:{
-            day:{type: Object}
+            day:{type: Object},
+            sixWeekMode: {type: Boolean}
         },
         methods:{
             scoreUp(){
@@ -26,11 +32,21 @@
             scoreDown(){
                 this.$emit('dayDown', this.day)
             }
-        }
+        },
+        mounted() {
+            // if (this.day.num == 6 && !this.sixWeekMode){
+            //     this.isSixWeek = true
+            // };
+  }
     }
 </script>
 
 <style  scoped>
+.deactive-mode{
+    opacity: 0.4;
+    pointer-events: none;
+    user-select: none;
+}
 .hours-wrap{
     display: flex;
     justify-content: space-between;
